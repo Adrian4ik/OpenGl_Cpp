@@ -1,0 +1,244 @@
+//#include <QMenu>
+
+#include <stdlib.h>
+//#include <cmath>
+//#include <fstream>
+#include <iostream>
+//#include <map>
+//#include <ostream>
+#include <vector>
+
+#include <chrono>
+#include <thread>
+#include <windows.h>
+
+//#include <def_type.h>
+//#include <df_func.h>
+//#include <base_f.h>
+
+#include <glut.h>
+
+/*#if defined(linux) || defined(_WIN32_)
+	#include <GL/glut.h> //Для Linux и Windows
+#else
+	#include <GLUT/GLUT.h> //Для Mac OS
+#endif*/
+
+#define tab "\t" // "Привет," tab "меня зовут Амир."
+#define distance 0.100f; // дистанция кек лол валидол
+
+const int Iterations = 100, zoom = 150;
+const float pogr1 = 0.002f; // pogr типа погрешность, ну ты понял
+
+int it = 1,
+	go_down = -1,
+	angle = 135,
+	width,
+	height;
+
+float flt_x = 2 * pogr1 - 0.1f,
+	flt_y = 0.0f - pogr1,
+	r_flt_x = 0.03f,
+	r_flt_y = 0,
+	speed, // angle / Iterations
+	length = 0.3f,
+	radius = 0.05f,
+	angle_spd = -1;
+
+//CLSID_AddrControl.SimpleOpenGlControl graphics_display
+
+#pragma region Объявление функций
+
+void reshape(int w, int h);
+void display();
+void Obj_rotating();
+void Obj_moving();
+void Obj_cycling();
+void Obj_color(int r, int g, int b, int a);
+void Obj_color(int r, int g, int b);
+
+#pragma endregion
+
+using namespace std;
+
+void reshape(int w, int h)
+{
+	width = w;
+	height = h;
+
+	glViewport(0, 0, width, height);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//gluOrtho2D(0, width, 0, height);
+	glOrtho(0, width, 0, height, -5.0, 5.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	if (width >= height)
+		glViewport((width - height) / 2, 0, height, height);
+	else
+		glViewport(0, (height - width) / 2, width, width);
+}
+
+void display()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	glColor3f(1.0f, 0, 0);
+	glPushMatrix();
+	glTranslated(0, 0, -6);
+	glRotated(45, 1, 1, 0);
+	
+	// рисуем сферу с помощью библиотеки FreeGLUT
+	glutWireSphere(2, 32, 32);
+	glPopMatrix();
+	glFlush();
+	InvalidateRect(hwnd, NULL, TRUE);
+	
+	/*Obj_color(0, 0, 0, 0);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(255, 255, 255, 1); // 255,6,90
+	glLoadIdentity();
+	glTranslated(0, 0, -zoom);
+
+	//glClear(GL_COLOR_BUFFER_BIT);
+
+	Obj_rotating();
+	Obj_moving();
+	Obj_cycling();
+
+	float Katet = 0.19f - r_flt_y;
+
+	Obj_color(255, 0, 0);
+	glTranslated(0.0f, 0.0f, 0.0f);
+	glutSolidSphere(0.5f / zoom, 20, 20);
+
+	Obj_color(0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(r_flt_x, r_flt_y, 0.0f);
+	glEnd();
+
+	glTranslated(r_flt_x, r_flt_y, 0.0f);
+	glutSolidSphere((float)1 / zoom, 20, 20); // двигается по окружности
+
+	glTranslated(-(float)sqrt(length * length - Katet * Katet), Katet, 0.0f); // flt_x - pogr1, pogr1 - flt_y
+	glutSolidSphere((float)1 / zoom, 20, 20); // двигается вдоль оси X
+
+	Obj_color(0, 0, 0, 0);
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 0.0f, 0.0f); // точка 1 по Y
+	glVertex3f((float)sqrt(length * length - Katet * Katet), -Katet, 0.0f); // точка 2 по X
+	glEnd();
+
+
+
+	glutSwapBuffers();*/
+}
+
+#pragma region Мои методы
+// Obj_rotating - процедура вращения объекта вокруг не своей оси
+// хотя можно запилить вращение вообще всей сцены при помощи glRotated
+void Obj_rotating()
+{
+    double angle_in_rads = (angle_spd * angle) * (3.14159 / 180); //скорее всего эту формулу надо поменять
+    r_flt_x = -(float)cos(angle_in_rads) * radius;
+    r_flt_y = (float)sin(angle_in_rads) * radius;
+
+    angle++;
+    if (angle == 360)
+        angle = 0;
+}
+
+void Obj_moving()
+{
+    flt_x = flt_x + (speed * go_down);
+    //flt_y = flt_y - (speed * go_down);
+}
+
+void Obj_cycling()
+{
+    if (it == Iterations || it == 1)
+        go_down = go_down * -1;
+    it = it + go_down;
+}
+
+void Obj_color(int r, int g, int b, int a)
+{
+    float color[4] = { r, g, b, a };
+    float shininess[1] = { 30 };
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, color);
+    glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
+}
+
+void Obj_color(int r, int g, int b)
+{
+    float color[3] = { r, g, b };
+    float shininess[1] = { 30 };
+
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, color);
+    glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
+}
+#pragma endregion
+
+void main(int argc, char * argv[])
+{
+	setlocale(LC_ALL, "Russian");
+
+	speed = distance;
+	speed /= Iterations;
+
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	
+	// очистка окна
+	glClearColor(255, 255, 255, 1);
+	
+	// установка порта вывода в соответствии с размерами элемента anT
+	glViewport(0, 0, AnT.Width, AnT.Height);
+	
+	// настройка проекции
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45, (float)AnT.Width / (float)AnT.Height, 0.1, 200);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	
+	// настройка параметров OpenGL для визуализации
+	glEnable(GL_DEPTH_TEST);
+	
+	/*glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+	glMatrixMode(GL_PROJECTION);
+
+	gluPerspective(0.2, 1, 0.1, 200); // (float)graphics_display.Width / (float)graphics_display.Height
+	glMatrixMode(GL_MODELVIEW);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("Kek 1488 3228");
+
+	glClearColor(0.8, 0.8, 0.8, 1.0);
+
+	flt_x = 2 * pogr1 - distance;
+
+	glutReshapeFunc(reshape);
+	glutDisplayFunc(display);
+
+
+	//unsigned short kekas = SetTimer(0, 0, 1000, display);
+	//while (true) {}
+
+	//unsigned short hui = 1000, zalupa = GetTickCount();
+	//while (zalupa + hui >= GetTickCount()) { display(); }
+
+	glutMainLoop();*/
+}

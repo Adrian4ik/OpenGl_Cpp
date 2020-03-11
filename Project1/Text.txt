@@ -1,0 +1,53 @@
+	/*float her = 17274.382916;
+
+	cout.setf(ios::fixed, ios::floatfield);
+	cout.precision(10);
+	cout << "начальное число: " << her << endl;
+
+	int a = floor(her * 100);
+
+	her = a;
+	her /= 100;
+	her = her - 0.000859375;
+
+	cout.precision(2);
+	cout << "полученное int число: " << a << endl;
+	cout << "полученное float число: " << her << endl;
+	cout.precision(10);
+	cout << "реальное полученное float число: " << her << endl;*/
+
+	string qwe = "14.883228", sec;
+	int flag = 0;
+	
+	for (int i = 0; i < qwe.length(); i++)
+	{
+		if (flag == 3)
+			break;
+
+		if (qwe[i] == '.' || flag > 0)
+		{
+			flag++;
+			sec = qwe[i];
+		}
+	}
+
+	qwe = sec;
+
+
+
+//////////////////////////////////////////////////////////////////
+	
+	
+
+	vector<int> nums;
+
+	nums.push_back(5);
+	nums.push_back(228);
+	nums.push_back(1488);
+
+	for (int n : nums)
+		cout << n << tab;
+
+	cout << endl;
+	cout << "Количество: " tab << nums.size() << endl;
+	cout << "Привет," tab "меня зовут Амир." << endl;
